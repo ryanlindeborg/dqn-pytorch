@@ -1,5 +1,7 @@
 import random
+import torch
 from collections import deque
+from .experience import Experience
 
 class ReplayMemory():
     def __init__(self, memory_capacity):
@@ -21,7 +23,19 @@ class ReplayMemory():
             raise Exception(f"Not enough experiences in memory buffer to sample from, for batch size of {batch_size}")
 
         replay_sample = random.sample(self.memory, batch_size)
-        # TODO: Zip together the different experiences - just do this in sample method...
+        replay_states, replay_actions, replay_rewards, replay_next_states = self.extract_replay_tensors_from_sample_batch(replay_sample)
 
+        return replay_states, replay_actions, replay_rewards, replay_next_states
 
-        return replay_sample
+    def extract_replay_tensors_from_sample_batch(self, batch_experiences):
+        # Will convert batch of individual experiences to one experience that is tuple of all experiences together
+        batch_experience = Experience(*zip(*batch_experiences))
+
+        # Separate into individual tensors for state, action, reward, next state
+        replay_tensor_state = torch.cat(batch_experience.state)
+        replay_tensor_action = torch.cat(batch_experience.action)
+        replay_tensor_reward = torch.cat(batch_experience.reward)
+        replay_tensor_next_state = torch.cat(batch_experience.next_state)
+
+        return (replay_tensor_state, replay_tensor_action, replay_tensor_reward, replay_tensor_next_state)
+

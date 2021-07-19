@@ -39,7 +39,9 @@ def run_dqn_on_cartpole():
         env_name=OPENAI_ENV_CARTPOLE,
         device=device,
         memory=memory,
-        dqn=dqn
+        dqn=dqn,
+        optimizer=optimizer,
+        gamma=gamma
     )
     exploration_strategy = EpsilonGreedyStrategy(
         start_exploration_rate=epsilon_start,

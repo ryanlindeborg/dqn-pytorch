@@ -1,10 +1,11 @@
 import gym
 import torch
+import torch.nn.functional as F
 
 from .experience import Experience
 
 class EnvManager():
-    def __init__(self, env_name, device, memory, dqn, agent=None):
+    def __init__(self, env_name, device, memory, dqn, optimizer, gamma=1, agent=None):
         self.env_name = env_name
         # For now, just using environments from OpenAI Gym
         # To access certain properties of the OpenAI Gym environment, you have to unwrap it
@@ -15,6 +16,8 @@ class EnvManager():
         # Batch size to sample replay memory for training
         self.replay_batch_size = 256
         self.dqn = dqn
+        self.optimizer = optimizer
+        self.gamma = gamma
         self.agent = agent
         self.device = device
 
@@ -50,7 +53,17 @@ class EnvManager():
 
     def learn(self):
         try:
-            replay_sample = self.memory.sample(self.replay_batch_size)
+            replay_states, replay_actions, replay_rewards, replay_next_states = self.memory.sample(self.replay_batch_size)
+            current_q_values = self.dqn.get_current_q_values(replay_states, replay_actions)
+            next_q_values = self.dqn.get_next_q_values(replay_next_states)
+            target_q_values = replay_rewards + (self.gamma * next_q_values)
+
+            print(f"Target q values dims: {target_q_values.size()}")
+            loss = F.mse_loss(current_q_values, target_q_values.unsqueeze(1))
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
 
 
         except Exception as e:
