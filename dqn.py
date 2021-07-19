@@ -1,14 +1,5 @@
-import gym
-import math
-import random
-import numpy as np
-
-import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-
-from .experience import Experience
 
 class DQN(nn.Module):
     def __init__(self, input_dims, output_dims):
@@ -35,9 +26,3 @@ class DQN(nn.Module):
         output_tensor = F.relu(self.fc2_layer(output_tensor))
         output_tensor = self.output_layer(output_tensor)
         return output_tensor
-
-def run_dqn_on_cartpole():
-    pass
-
-if __name__ == "__main__":
-    run_dqn_on_cartpole()

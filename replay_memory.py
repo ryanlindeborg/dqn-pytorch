@@ -20,4 +20,8 @@ class ReplayMemory():
         if len(self.memory) < batch_size:
             raise Exception(f"Not enough experiences in memory buffer to sample from, for batch size of {batch_size}")
 
-        return random.sample(self.memory, batch_size)
+        replay_sample = random.sample(self.memory, batch_size)
+        # TODO: Zip together the different experiences - just do this in sample method...
+
+
+        return replay_sample
