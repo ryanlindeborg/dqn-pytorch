@@ -21,9 +21,10 @@ class DQN(nn.Module):
         self.output_layer = nn.Linear(in_features=hidden_layer_2_size, out_features=self.output_dims)
 
     def forward(self, input_tensor):
-        print(f"Input tensor size: {input_tensor.size()}")
-        input_tensor = input_tensor.flatten(start_dim=1)
-        print(f"Input tensor size after flattening: {input_tensor.size()}")
+        # print(f"Input tensor size: {input_tensor.size()}")
+        # input_tensor = input_tensor.flatten(start_dim=1)
+        # print(f"Input tensor size after flattening: {input_tensor.size()}")
+        input_tensor = input_tensor.to(self.device)
         output_tensor = F.relu(self.fc1_layer(input_tensor))
         output_tensor = F.relu(self.fc2_layer(output_tensor))
         output_tensor = self.output_layer(output_tensor)

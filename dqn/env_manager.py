@@ -2,7 +2,7 @@ import gym
 import torch
 import torch.nn.functional as F
 
-from .experience import Experience
+from experience import Experience
 
 class EnvManager():
     def __init__(self, env_name, device, memory, dqn, optimizer, gamma=1, agent=None):
@@ -26,21 +26,24 @@ class EnvManager():
 
     def take_action(self, action):
         next_state, reward, self.done, info = self.env.step(action)
-        return next_state, torch.tensor([reward], device=self.device)
+        return torch.tensor(next_state, dtype=torch.float32, device=self.device), torch.tensor([reward], device=self.device)
 
     def close_env(self):
         self.env.close()
 
     def run_episode(self):
         num_steps = 0
+        # TODO: Can play with changing state to be from rendered screen instead of returned state from environment
         state = self.env.reset()
+        state = torch.tensor(state, dtype=torch.float32, device=self.device)
         while not self.done or num_steps < 1000:
             num_steps += 1
             # Select and take action
             action = self.agent.get_action(state=state, dqn=self.dqn)
-            next_state, reward = self.take_action(action)
+            next_state, reward = self.take_action(action.item())
 
             # Add experience to memory
+            # State, action, reward, and next state are all tensors here
             self.memory.add_to_memory(Experience(state, action, reward, next_state))
             state = next_state
 
@@ -68,4 +71,4 @@ class EnvManager():
 
         except Exception as e:
             # This could occur if not enough experiences in replay buffer yet
-            print(e)
+            print(f"Error in learning: {e}")

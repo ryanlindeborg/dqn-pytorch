@@ -1,7 +1,7 @@
 import random
 import torch
 from collections import deque
-from .experience import Experience
+from experience import Experience
 
 class ReplayMemory():
     def __init__(self, memory_capacity):

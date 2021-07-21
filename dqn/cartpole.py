@@ -1,11 +1,11 @@
 import torch
 import torch.optim as optim
 
-from .epsilon_greedy_strategy import EpsilonGreedyStrategy
-from .env_manager import EnvManager
-from .dqn_agent import DQNAgent
-from .replay_memory import ReplayMemory
-from .dqn import DQN
+from epsilon_greedy_strategy import EpsilonGreedyStrategy
+from env_manager import EnvManager
+from dqn_agent import DQNAgent
+from replay_memory import ReplayMemory
+from dqn import DQN
 
 OPENAI_ENV_CARTPOLE = "CartPole-v0"
 
@@ -55,7 +55,7 @@ def run_dqn_on_cartpole():
     env_manager.agent = dqn_agent
 
 
-    for episode in num_episodes:
+    for episode in range(num_episodes):
         env_manager.run_episode()
     env_manager.close()
 

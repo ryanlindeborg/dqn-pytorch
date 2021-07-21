@@ -12,14 +12,16 @@ class DQNAgent():
         epsilon = self.exploration_strategy.get_exploration_rate()
         if random.random() <= epsilon:
             action = self.select_random_action()
-            action = torch.tensor([action]).to(self.device)
+            action = torch.tensor([action], dtype=torch.long).to(self.device)
         else:
             with torch.no_grad():
                 logits = dqn(state)
-                print(f"Feedforward through dqn to get action, shape: {logits.size()}")
-                print(f"Logits: {logits}")
-                print(f"Argmax: {logits.argmax(dim=1)}")
-                action = dqn(state).argmax(dim=1).to(self.device)
+                # print(f"Feedforward through dqn to get action, shape: {logits.size()}")
+                # print(f"Logits: {logits}")
+                # action = dqn(state).argmax(dim=1).to(self.device)
+                # action = dqn(state).argmax().to(self.device)
+                action = dqn(state).argmax()
+                action = torch.tensor([action]).to(self.device)
 
         # Now that you have selected the action, decay the exploration rate so that you are more likely to select greedy action
         self.exploration_strategy.decay_exploration_rate()
