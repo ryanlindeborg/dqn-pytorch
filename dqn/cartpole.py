@@ -20,7 +20,8 @@ def run_dqn_on_cartpole():
     epsilon_decay = 0.995
     memory_size = 100000
     lr = 0.001
-    num_episodes = 1000
+    num_episodes = 10000
+    num_eval_episodes = 100
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Input and output dimensions for cartpole
@@ -54,10 +55,15 @@ def run_dqn_on_cartpole():
         device=device)
     env_manager.agent = dqn_agent
 
-
+    # Run training loop for num_episodes
     for episode in range(num_episodes):
+        if episode % 1000 == 0:
+            print(f"Progress: On episode {episode}")
         env_manager.run_episode()
-    env_manager.close()
+    env_manager.close_env()
+
+    # Evaluate model
+    env_manager.evaluate_model(num_eval_episodes)
 
 
 if __name__ == "__main__":

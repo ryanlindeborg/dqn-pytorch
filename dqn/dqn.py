@@ -31,20 +31,21 @@ class DQN(nn.Module):
         return output_tensor
 
     def get_current_q_values(self, states, actions):
-        print(f"Actions dimensions: {actions.size()}")
+        # print(f"Actions dimensions: {actions.size()}")
         return self(states).gather(dim=1, index=actions.unsqueeze(-1))
 
     def get_next_q_values(self, next_states):
-        # Only compute next q values on non-final states, to reduce extra work
+        # TODO: Only compute next q values on non-final states, to reduce extra work
         # State is final if max value of state is 0
-        print(f"Next states dims: {next_states.size()}")
-        final_state_mask = next_states.flatten(start_dim=1).max(dim=1)[0].eq(0).type(torch.bool)
-        non_final_state_mask = (final_state_mask == False)
-        non_final_states = next_states[non_final_state_mask]
+        # print(f"Next states dims: {next_states.size()}")
+        # final_state_mask = next_states.flatten(start_dim=1).max(dim=1)[0].eq(0).type(torch.bool)
+        # non_final_state_mask = (final_state_mask == False)
+        # non_final_states = next_states[non_final_state_mask]
 
-        batch_size = next_states.shape[0]
+        # batch_size = next_states.shape[0]
         # First initialize q values to 0 then populate values in non-final states
-        next_q_values = torch.zeros(batch_size).to(self.device)
+        # next_q_values = torch.zeros(batch_size).to(self.device)
         # TODO: Update this to use target network if doing double DQN
-        next_q_values[non_final_state_mask] = self(non_final_states).max(dim=1)[0].detach()
+        # next_q_values[non_final_state_mask] = self(non_final_states).max(dim=1)[0].detach()
+        next_q_values = self(next_states).max(dim=1)[0].detach()
         return next_q_values

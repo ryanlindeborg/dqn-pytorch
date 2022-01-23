@@ -44,15 +44,36 @@ class EnvManager():
 
             # Add experience to memory
             # State, action, reward, and next state are all tensors here
-            self.memory.add_to_memory(Experience(state, action, reward, next_state))
+            self.memory.add_to_memory(Experience(state=state, action=action, reward=reward, next_state=next_state))
             state = next_state
 
             # Learn on random batch from replay memory
             self.learn()
 
         print(f"Finished the episode after {num_steps} steps")
+        self.done = False
 
+    # CartPole-v0 defines solving the env as getting average reward of 195 over 100 consecutive trials
+    def evaluate_model(self, num_eval_episodes):
+        for _ in range(num_eval_episodes):
+            num_steps = 0
+            score = 0
+            state = self.env.reset()
+            state = torch.tensor(state, dtype=torch.float32, device=self.device)
+            while not self.done or num_steps < 1000:
+                num_steps += 1
+                # Select and take action
+                action = self.agent.get_action(state=state, dqn=self.dqn)
+                next_state, reward = self.take_action(action.item())
+                score += reward.item()
+                state = next_state
+            self.done = False
 
+        average_reward = score / num_eval_episodes
+        if average_reward > 195:
+            print(f"SUCCESS! You have solved Cartpole, with an average score of {average_reward} over {num_eval_episodes} episodes")
+        else:
+            print(f"Darn...you did not solve Cartpole, with an average score of {average_reward} over {num_eval_episodes} episodes")
 
     def learn(self):
         try:
@@ -61,14 +82,11 @@ class EnvManager():
             next_q_values = self.dqn.get_next_q_values(replay_next_states)
             target_q_values = replay_rewards + (self.gamma * next_q_values)
 
-            print(f"Target q values dims: {target_q_values.size()}")
+            # print(f"Target q values dims: {target_q_values.size()}")
             loss = F.mse_loss(current_q_values, target_q_values.unsqueeze(1))
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
-
-
-
         except Exception as e:
             # This could occur if not enough experiences in replay buffer yet
             print(f"Error in learning: {e}")
