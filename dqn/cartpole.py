@@ -18,12 +18,12 @@ def run_dqn_on_cartpole():
     epsilon_start = 1
     epsilon_end = 0.01
     # epsilon_decay = 0.995
-    epsilon_decay = 0.9995
-    # epsilon_decay = 0.99995
+    # epsilon_decay = 0.9995
+    epsilon_decay = 0.99995
     # epsilon_decay = 0.999995
     memory_size = 1000000
     lr = 0.001
-    num_episodes = 10000
+    num_episodes = 100000
     num_eval_episodes = 100
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -38,12 +38,17 @@ def run_dqn_on_cartpole():
         input_dims=input_dims,
         output_dims=output_dims
     )
+    target_dqn = DQN(
+        input_dims=input_dims,
+        output_dims=output_dims
+    )
     optimizer = optim.Adam(params=dqn.parameters(), lr=lr)
     env_manager = EnvManager(
         env_name=OPENAI_ENV_CARTPOLE,
         device=device,
         memory=memory,
         dqn=dqn,
+        target_dqn=target_dqn,
         optimizer=optimizer,
         gamma=gamma
     )

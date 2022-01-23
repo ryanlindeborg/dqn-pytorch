@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from experience import Experience
 
 class EnvManager():
-    def __init__(self, env_name, device, memory, dqn, optimizer, gamma=1, agent=None):
+    def __init__(self, env_name, device, memory, dqn, target_dqn, optimizer, gamma=1, agent=None):
         self.env_name = env_name
         # For now, just using environments from OpenAI Gym
         # To access certain properties of the OpenAI Gym environment, you have to unwrap it
@@ -16,10 +16,15 @@ class EnvManager():
         # Batch size to sample replay memory for training
         self.replay_batch_size = 256
         self.dqn = dqn
+        self.target_dqn = target_dqn
         self.optimizer = optimizer
         self.gamma = gamma
         self.agent = agent
         self.device = device
+        # Keep track of backpropagation updates made, so that can update target Q network at lower frequency
+        self.num_network_param_updates = 0
+        # Number of network updates before target network is updated
+        self.target_network_update_frequency = 300
 
     def get_num_actions_available(self):
         return self.env.action_space.n
@@ -86,7 +91,7 @@ class EnvManager():
             self.dqn.train()
             replay_states, replay_actions, replay_rewards, replay_next_states = self.memory.sample(self.replay_batch_size)
             current_q_values = self.dqn.get_current_q_values(replay_states, replay_actions)
-            next_q_values = self.dqn.get_next_q_values(replay_next_states)
+            next_q_values = self.target_dqn.get_next_q_values(replay_next_states)
             target_q_values = replay_rewards + (self.gamma * next_q_values)
 
             # print(f"Target q values dims: {target_q_values.size()}")
@@ -97,6 +102,16 @@ class EnvManager():
             for param in self.dqn.parameters():
                 param.grad.data.clamp_(-1, 1)
             self.optimizer.step()
+            self.num_network_param_updates += 1
+
+            # Periodically update the target network by Q network to target Q network
+            if self.num_network_param_updates % self.target_network_update_frequency == 0:
+                # print("*************Made target network update")
+                # print("*************Made target network update")
+                # print("*************Made target network update")
+                # print("*************Made target network update")
+                # print("*************Made target network update")
+                self.target_dqn.load_state_dict(self.dqn.state_dict())
         except Exception as e:
             # This could occur if not enough experiences in replay buffer yet
             print(f"Error in learning: {e}")
