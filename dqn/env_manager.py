@@ -25,7 +25,8 @@ class EnvManager():
         return self.env.action_space.n
 
     def take_action(self, action):
-        next_state, reward, self.done, info = self.env.step(action)
+        next_state, reward, done, info = self.env.step(action)
+        self.done = done
         return torch.tensor(next_state, dtype=torch.float32, device=self.device), torch.tensor([reward], device=self.device)
 
     def close_env(self):
@@ -33,14 +34,17 @@ class EnvManager():
 
     def run_episode(self):
         num_steps = 0
+        score = 0
         # TODO: Can play with changing state to be from rendered screen instead of returned state from environment
         state = self.env.reset()
         state = torch.tensor(state, dtype=torch.float32, device=self.device)
-        while not self.done or num_steps < 1000:
+        while not self.done and num_steps < 1000:
             num_steps += 1
             # Select and take action
             action = self.agent.get_action(state=state, dqn=self.dqn)
             next_state, reward = self.take_action(action.item())
+            score += reward.item()
+            # print(f"Num steps: {num_steps}. Reward: {reward.item()}, current score: {score}")
 
             # Add experience to memory
             # State, action, reward, and next state are all tensors here
@@ -50,7 +54,7 @@ class EnvManager():
             # Learn on random batch from replay memory
             self.learn()
 
-        print(f"Finished the episode after {num_steps} steps")
+        print(f"Finished the episode after {num_steps} steps. Reward: {score}")
         self.done = False
 
     # CartPole-v0 defines solving the env as getting average reward of 195 over 100 consecutive trials

@@ -57,6 +57,7 @@ def run_dqn_on_cartpole():
 
     # Run training loop for num_episodes
     for episode in range(num_episodes):
+        print(f"Episode num: {episode}")
         if episode % 1000 == 0:
             print(f"Progress: On episode {episode}")
         env_manager.run_episode()
