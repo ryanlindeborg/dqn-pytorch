@@ -20,6 +20,11 @@ class DQN(nn.Module):
         self.fc2_layer = nn.Linear(in_features=hidden_layer_1_size, out_features=hidden_layer_2_size)
         self.output_layer = nn.Linear(in_features=hidden_layer_2_size, out_features=self.output_dims)
 
+        # Initialize weights
+        torch.nn.init.kaiming_normal_(self.fc1_layer.weight, mode='fan_in', nonlinearity='relu')
+        torch.nn.init.kaiming_normal_(self.fc2_layer.weight, mode='fan_in', nonlinearity='relu')
+        torch.nn.init.xavier_normal_(self.output_layer.weight)
+
     def forward(self, input_tensor):
         # print(f"Input tensor size: {input_tensor.size()}")
         # input_tensor = input_tensor.flatten(start_dim=1)

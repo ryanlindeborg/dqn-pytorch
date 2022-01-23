@@ -17,8 +17,11 @@ def run_dqn_on_cartpole():
     gamma = 0.999
     epsilon_start = 1
     epsilon_end = 0.01
-    epsilon_decay = 0.995
-    memory_size = 100000
+    # epsilon_decay = 0.995
+    epsilon_decay = 0.9995
+    # epsilon_decay = 0.99995
+    # epsilon_decay = 0.999995
+    memory_size = 1000000
     lr = 0.001
     num_episodes = 10000
     num_eval_episodes = 100

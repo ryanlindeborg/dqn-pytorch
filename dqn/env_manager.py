@@ -54,20 +54,22 @@ class EnvManager():
             # Learn on random batch from replay memory
             self.learn()
 
+        print(f"Epsilon: {self.agent.get_epsilon()}")
         print(f"Finished the episode after {num_steps} steps. Reward: {score}")
         self.done = False
 
     # CartPole-v0 defines solving the env as getting average reward of 195 over 100 consecutive trials
     def evaluate_model(self, num_eval_episodes):
+        self.dqn.eval()
         for _ in range(num_eval_episodes):
             num_steps = 0
             score = 0
             state = self.env.reset()
             state = torch.tensor(state, dtype=torch.float32, device=self.device)
-            while not self.done or num_steps < 1000:
+            while not self.done and num_steps < 1000:
                 num_steps += 1
                 # Select and take action
-                action = self.agent.get_action(state=state, dqn=self.dqn)
+                action = self.agent.get_action(state=state, dqn=self.dqn, is_training=False)
                 next_state, reward = self.take_action(action.item())
                 score += reward.item()
                 state = next_state
@@ -81,6 +83,7 @@ class EnvManager():
 
     def learn(self):
         try:
+            self.dqn.train()
             replay_states, replay_actions, replay_rewards, replay_next_states = self.memory.sample(self.replay_batch_size)
             current_q_values = self.dqn.get_current_q_values(replay_states, replay_actions)
             next_q_values = self.dqn.get_next_q_values(replay_next_states)
@@ -90,6 +93,9 @@ class EnvManager():
             loss = F.mse_loss(current_q_values, target_q_values.unsqueeze(1))
             self.optimizer.zero_grad()
             loss.backward()
+            # Clip gradients
+            for param in self.dqn.parameters():
+                param.grad.data.clamp_(-1, 1)
             self.optimizer.step()
         except Exception as e:
             # This could occur if not enough experiences in replay buffer yet
